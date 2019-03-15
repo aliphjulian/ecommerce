@@ -11,11 +11,13 @@ class Login extends React.Component{
         
     // KE TRIGER KALAU ADA PERUBAHAN PROPS YAITU GLOBAL STATE
     componentWillReceiveProps(newProps){
+        console.log(newProps)
         Cookie.set('userData',newProps.username,{path :'/'})
     }
+
     onBtnLoginClick = () => {
-        var username = this.refs.username.value // fikri
-        var password = this.refs.password.value // rahasia123
+        var username = this.refs.username.value 
+        var password = this.refs.password.value 
         this.props.onLogin(username,password)
     }
 
@@ -88,6 +90,4 @@ const mapsStateToProps =(state) => {
         error : state.user.error,
     }
 }
-
-
 export default connect(mapsStateToProps,{ onLogin })(Login)

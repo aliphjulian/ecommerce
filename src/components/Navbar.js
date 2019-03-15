@@ -82,9 +82,19 @@ class HeaderKu extends Component{
                                     </NavItem>
                                     <UncontrolledDropdown nav inNavbar>
                                         <DropdownToggle nav caret>
-                                        Menu
+                                            Menu
                                         </DropdownToggle>
                                         <DropdownMenu right>
+                                        {this.props.role === 'admin'
+                                            ?
+                                                <Link to ='/manage'> 
+                                                    <DropdownItem>
+                                                        Manage Product
+                                                    </DropdownItem>
+                                                </Link>
+                                            :
+                                            null
+                                        }
                                         <DropdownItem>
                                             Histori Transaksi
                                         </DropdownItem>
@@ -109,7 +119,8 @@ class HeaderKu extends Component{
 
 const mapStateToProps = (state) => {
     return {
-        bebas : state.user.username
+        bebas : state.user.username,
+        role : state.user.role
     }
 }
 

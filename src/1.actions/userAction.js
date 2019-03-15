@@ -1,5 +1,9 @@
 import axios from 'axios'
+import {urlApi} from './../support/urlApi'
+import cookie from 'universal-cookie'
+import { resetWarningCache } from 'prop-types';
 
+const objCookie = new cookie()
 export const onLogin = (paramUsername,password) => { 
     return(dispatch)=>{
         // INI UNTUK MENGUBAH LOADING MENJADI TRUE
@@ -8,7 +12,7 @@ export const onLogin = (paramUsername,password) => {
         })
 
         // GET DATA DARI FAKE API JSON SERVER
-        axios.get('http://localhost:2000/users',{
+        axios.get(urlApi + '/users',{
             params:{username :paramUsername,
                     password}})
         
@@ -21,7 +25,12 @@ export const onLogin = (paramUsername,password) => {
                 dispatch(
                     {
                         type : 'LOGIN_SUCCESS',
-                        payload : res.data[0].username
+                        payload : 
+                        {
+                             username : res.data[0].username,
+                             role : res.data[0].role,
+                             id : res.data[0].id
+                        }
                     }
                 )
             }else{
@@ -43,12 +52,16 @@ export const onLogin = (paramUsername,password) => {
 
 export const keepLogin = (cookie) => {
     return(dispatch) => {
-        axios.get('http://localhost:2000/users',{params : {username : cookie}})
+        axios.get(urlApi + '/users',{params : {username : cookie}})
         .then((res) => {
             if(res.data.length > 0){
                 dispatch({
                     type : 'LOGIN_SUCCESS',
-                    payload : res.data[0].username
+                    payload : 
+                        {
+                             username : res.data[0].username,
+                             role : res.data[0].role
+                        }
                 })
             }
         })
@@ -60,5 +73,74 @@ export const keepLogin = (cookie) => {
 export const resetUser = () => {
     return {
         type : 'RESET_USER'
+    }
+}
+
+export const userRegister = (a,b,c,d) => { // userRegister('aliph')
+    return(dispatch)=>{
+        dispatch({
+            type : 'LOADING'
+        })
+        var newData = {username : a, password : b, email : c, phone : d}
+        // Mengecek Username availablity
+
+        axios.get(urlApi +'/users?username=' + a)
+        .then((res) => {
+            if(res.data.length > 0){
+                dispatch({
+                    type : 'USERNAME_NOT_AVAILABLE'
+                })
+            }
+            else{
+                axios.post(urlApi +'/users',newData)
+                .then((res) => dispatch({
+                    type : 'LOGIN_SUCCESS',
+                    //Mengirim Payload dalam bentuk Object
+                    //payload : { username : newData.username, id : res.data.id, email : c} 
+                    payload : a
+                },
+                    // Parameter Ketiga agar cookie bisa diakses di semua komponen
+                    objCookie.set('userData',a,{path : '/'}),
+                ))
+                .catch((err) => console.log(err))
+            }
+        })
+        .catch((err) => {
+            dispatch({
+                type : 'SYSTEM_ERROR'
+            })
+        })
+    }
+}
+
+export const loginWithGoogle = (email) => {
+    return(dispatch) => {
+        axios.get(urlApi + '/users?username=' + email)
+        .then((res) => {
+            if(res.data.length > 0){
+                dispatch({
+                    type : 'LOGIN_SUCCESS',
+                    payload : res.data[0]
+                },
+                    objCookie.set('userData',email,{path : '/'})
+                )
+            }else {
+                axios.post(urlApi + '/users',{username : email,role:'user'})
+                .then((res) => {
+                    dispatch({
+                        type : 'LOGIN_SUCCESS',
+                        payload : res.data
+                    },
+                        objCookie.set('userData',email,{path : '/'})
+                    )
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+        })
     }
 }
